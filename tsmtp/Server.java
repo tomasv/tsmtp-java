@@ -7,9 +7,16 @@ import java.util.concurrent.*;
 import tsmtp.Session;
 
 class Server {
+	static private int default_port = 3490;
 	private int port = 3490;
+	private String host = "localhost";
 	private ServerSocket serverSocket;
 	private ExecutorService executor;
+
+	public Server() throws Exception {
+		this.serverSocket = new ServerSocket(this.port);
+		this.executor = Executors.newCachedThreadPool();
+	}
 
 	public Server(int port) throws Exception {
 		this.port = port;
@@ -18,6 +25,7 @@ class Server {
 	}
 
 	public void run() throws Exception {
+		System.out.println("Using port " + port + ".");
 		while(true){
 			Socket clientSocket = serverSocket.accept();
 			System.out.println("Client connected: " + clientSocket.getInetAddress().getHostAddress());
@@ -26,11 +34,14 @@ class Server {
 	}
 
 	public static void main(String[] args) {
-		System.out.println("Hello, world!");
+		int port = default_port;
 		try {
-			new Server(3490).run();
+			if (args.length == 1) {
+				new Server(Integer.parseInt(args[0])).run();
+			} else {
+				new Server().run();
+			}
 		} catch (Exception e) {
-			e.printStackTrace();
 		}
 	}
 }
