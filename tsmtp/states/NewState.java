@@ -5,9 +5,6 @@ import tsmtp.Session;
 
 public class NewState implements SessionState {
 	public void handle(Session session, Request request) {
-		request.isValid();
-		request.command.equals("HELO");
-		System.out.println("new state");
 		if (request.isValid() && request.command.equals("HELO")) {
 			System.out.println("aaa");
 			session.setDomain(request.arguments);

@@ -45,6 +45,7 @@ public class Session implements Runnable {
 			out.close();
 			socket.close();
 		} catch (Exception e) {
+			e.printStackTrace();
 		}
 	}
 

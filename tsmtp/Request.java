@@ -16,7 +16,8 @@ public class Request {
 
 	public Request(String command, ArrayList<String> arguments) {
 		parseCommand(command);
-		parseArguments(arguments);
+		if (this.command != null)
+			parseArguments(arguments);
 	}
 
 	private void parseCommand(String message) {
@@ -42,10 +43,12 @@ public class Request {
 		commands.add("RCPT TO:");
 
 		int index = commands.indexOf(this.command);
-		if ((index == -1) && (!args.isEmpty())) {
-			this.valid = false;
-		} else {
+		if ((index != -1) && (!args.isEmpty())) {
 			this.arguments = join(args, " ");
+			this.valid = true;
+		}
+		if ((index == -1) && (args.isEmpty())) {
+			this.arguments = null;
 			this.valid = true;
 		}
 	}
