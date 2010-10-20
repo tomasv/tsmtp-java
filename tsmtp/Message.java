@@ -6,6 +6,9 @@ public class Message {
 	private String to;
 	private String body;
 
+	public Message() {
+	}
+
 	public Message(String from, String to, String body) {
 		this.from = from;
 		this.to = to;
@@ -32,5 +35,8 @@ public class Message {
 	}
 	public void setBody(String body) {
 		this.body = body;
+	}
+	public void appendBody(String appendage) {
+		this.body += appendage;
 	}
 }

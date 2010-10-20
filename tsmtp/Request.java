@@ -1,9 +1,13 @@
 package tsmtp;
 
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.Collection;
+
 public class Request {
 
 	public String command;
-	public ArrayList<String> arguments;
+	public String arguments;
 
 	private boolean valid = false;
 
@@ -26,23 +30,22 @@ public class Request {
 		
 		int index = commands.indexOf(message);
 		if (index != -1) {
-			this.result = commands.get(index);
+			this.command = commands.get(index);
 			this.valid = true;
 		}
 	}
 
-	private void parseArguments(ArrayList<String> arguments) {
+	private void parseArguments(ArrayList<String> args) {
 		ArrayList<String> commands = new ArrayList<String>();
 		commands.add("HELO");
 		commands.add("MAIL FROM:");
 		commands.add("RCPT TO:");
 
 		int index = commands.indexOf(this.command);
-		if ((index == -1) && (!arguments.isEmpty())) {
+		if ((index == -1) && (!args.isEmpty())) {
 			this.valid = false;
 		} else {
-			arguments = join(arguments, " ");
-			this.arguments = arguments;
+			this.arguments = join(args, " ");
 			this.valid = true;
 		}
 	}
