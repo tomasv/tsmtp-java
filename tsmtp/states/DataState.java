@@ -2,16 +2,23 @@ package tsmtp.states;
 
 import tsmtp.Request;
 import tsmtp.Session;
+import tsmtp.states.*;
 
-public class DataState implements SessionState {
-	public void handle(Session session, Request request) {
-		System.out.println("data state");
-		if (session.getBuffer().equals(".\r\n")) {
+public class DataState extends SessionState {
+	public boolean handle(Session session, Request request) {
+		if (session.getBuffer().equals(".")) {
+			session.respond("OK");
 			session.submit(session.message);
 			session.reset();
 			session.setState(new GreetedState());
 		} else {
-			session.message.appendBody(session.getBuffer());
+			String buffer = session.getBuffer();
+			if (buffer == null) {
+				session.message.appendBody("\n");
+			} else {
+				session.message.appendBody("\n" + buffer);
+			}
 		}
+		return true;
 	}
 }

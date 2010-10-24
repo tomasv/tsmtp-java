@@ -3,6 +3,7 @@ package tsmtp;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.Collection;
+import java.util.Arrays;
 
 public class Request {
 
@@ -14,13 +15,14 @@ public class Request {
 	public Request() {
 	}
 
-	public Request(String command, ArrayList<String> arguments) {
-		parseCommand(command);
-		if (this.command != null)
-			parseArguments(arguments);
+	public Request(String message) {
+		if (!message.isEmpty()) {
+			message = parseCommand(message);
+			parseArguments(message);
+		}
 	}
 
-	private void parseCommand(String message) {
+	private String parseCommand(String message) {
 		ArrayList<String> commands = new ArrayList<String>();
 		commands.add("HELO");
 		commands.add("MAIL FROM:");
@@ -29,25 +31,33 @@ public class Request {
 		commands.add(".\r\n");
 		commands.add("QUIT");
 		
-		int index = commands.indexOf(message);
+		int index = -1;
+		for (String command : commands) {
+			if (message.startsWith(command)) {
+				index = commands.indexOf(command);
+				message = message.replaceFirst("^" + command + "\\s*", "");
+			}
+		}
+
 		if (index != -1) {
 			this.command = commands.get(index);
-			this.valid = true;
 		}
+
+		return message;
 	}
 
-	private void parseArguments(ArrayList<String> args) {
+	private void parseArguments(String message) {
 		ArrayList<String> commands = new ArrayList<String>();
 		commands.add("HELO");
 		commands.add("MAIL FROM:");
 		commands.add("RCPT TO:");
 
 		int index = commands.indexOf(this.command);
-		if ((index != -1) && (!args.isEmpty())) {
-			this.arguments = join(args, " ");
+		if ((index != -1) && (!message.isEmpty())) {
+			this.arguments = message;
 			this.valid = true;
 		}
-		if ((index == -1) && (args.isEmpty())) {
+		if ((index == -1) && (message.isEmpty())) {
 			this.arguments = null;
 			this.valid = true;
 		}
@@ -69,5 +79,11 @@ public class Request {
 
 	public boolean isValid() {
 		return valid;
+	}
+
+	public boolean commandIs(String name) {
+		if (this.isValid() && this.command.equals(name))
+			return true;
+		return false;
 	}
 }

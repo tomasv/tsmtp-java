@@ -11,6 +11,9 @@ public class Sender implements Runnable {
 	}
 
 	public void run() {
-		System.out.println("Sending message");
+		System.out.println("Sending message:");
+		System.out.println("FROM: " + message.getFrom());
+		System.out.println("TO: " + message.getTo());
+		System.out.println("BODY: " + message.getBody());
 	}
 }

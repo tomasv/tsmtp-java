@@ -7,6 +7,7 @@ public class Message {
 	private String body;
 
 	public Message() {
+		this.body = "";
 	}
 
 	public Message(String from, String to, String body) {

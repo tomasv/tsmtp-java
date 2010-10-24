@@ -5,7 +5,7 @@ import java.io.PrintWriter;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.HashMap;
 
 import tsmtp.Request;
 import tsmtp.states.*;
@@ -20,32 +20,44 @@ public class Session implements Runnable {
 	public BufferedReader in;
 	public Message message;
 
+	private HashMap<String, String> response = new HashMap<String, String>();
+
 	private SessionState state;
 
 	public Session(Socket socket) {
 		this.socket = socket;
 		this.state = new NewState();
 		this.message = new Message();
+		initResponses();
 	}
 
 	public void run() {
 		try {
 			this.out = new PrintWriter(socket.getOutputStream(), true);
 			this.in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-			System.out.println("Running a session");
+			System.out.println("session start");
+			// greet the user
+			respond("HELLO");
 
 			while((buffer = in.readLine()) != null) {
-				System.out.println("Received message");
-				Request req = parseRequest(buffer);
-				state.handle(this, req);
+				try {
+					Request req = new Request(buffer);
+					state.handle(this, req);
+					if (state == null)
+						break;
+				} catch (Exception e) {
+					e.printStackTrace();
+					System.out.println("Error inside the session loop.");
+				}
 			}
 
-			System.out.println("Client disconnected: " + socket.getInetAddress().getHostAddress());
+			System.out.println("session end: " + socket.getInetAddress().getHostAddress());
 			in.close();
 			out.close();
 			socket.close();
 		} catch (Exception e) {
 			e.printStackTrace();
+			System.out.println("Error outside of the session loop.");
 		}
 	}
 
@@ -57,15 +69,11 @@ public class Session implements Runnable {
 		(new Sender(message)).run();
 	}
 
-	private Request parseRequest(String message) {
-		ArrayList<String> tokens = new ArrayList<String>(Arrays.asList(message.split("\t ")));
-		String command = tokens.get(0);
-		tokens.remove(0);
-		ArrayList<String> arguments = tokens;
-		return new Request(command, arguments);
-	}
-
 	public void setState(SessionState state) {
+		if (state != null)
+			System.out.println("changing state to " + state.getClass().getName());
+		else
+			System.out.println("changing state to final");
 		this.state = state;
 	}
 
@@ -75,5 +83,26 @@ public class Session implements Runnable {
 
 	public String getBuffer() {
 		return buffer;
+	}
+
+	public void respond(String abrev) {
+		out.println(getResponse(abrev));
+	}
+
+	public String getResponse(String abrev) {
+		return response.get(abrev);
+	}
+
+	private void initResponses() {
+		String[][] responses = {
+			{ "HELLO", "220 SMTP tsmtp" },
+			{ "BYE", "221 Bye" },
+			{ "OK", "250 Ok" } ,
+			{ "DATA", "354 End data with <CR><LF>.<CR><LF>" },
+			{ "SYNTAX", "501 Syntax error" },
+			{ "OOO" ,"503 Commands out of order: HELO -> (MAIL -> RCPT (+) -> DATA -> text -> CRLF.CRLF)(*) -> QUIT" }
+		};
+		for (String[] pair : responses)
+			response.put(pair[0], pair[1]);
 	}
 }

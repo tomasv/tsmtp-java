@@ -2,17 +2,16 @@ package tsmtp.states;
 
 import tsmtp.Request;
 import tsmtp.Session;
+import tsmtp.states.*;
 
-public class NewState implements SessionState {
-	public void handle(Session session, Request request) {
-		if (request.isValid() && request.command.equals("HELO")) {
-			System.out.println("aaa");
-			session.setDomain(request.arguments);
-			session.setState(new GreetedState());
-		} else {
-			System.out.println("bbb");
-			session.out.println("Wrong command for this state.");
-		}
-		System.out.println("new state");
+public class NewState extends SessionState {
+	public boolean handle(Session session, Request request) {
+		if (super.handle(session, request))
+			return true;
+		if (request.isValid())
+			session.respond("OOO");
+		else
+			session.respond("SYNTAX");
+		return true;
 	}
 }
